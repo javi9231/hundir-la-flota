@@ -44,6 +44,7 @@ and open the template in the editor.
             .tocado{
                 background-color: red;
             }
+
         </style>
     </head>
     <body>
@@ -199,12 +200,24 @@ and open the template in the editor.
                 return $this->TiposDeBarcos;
             }
 
+            function getPosicion() {
+                return $this->posicion;
+            }
+
+            function getTamanio() {
+                return $this->tamanio;
+            }
+
+            function getImpactos() {
+                return $this->impactos;
+            }
+
         }
 
         class Tablero {
 
             private $barcos = array();
-            private $tablero = array();
+            private $tabla = array();
             private $caracteres;
 
             function __construct() {
@@ -221,9 +234,9 @@ and open the template in the editor.
                         return;
                     }
                     $tamanio = $barco->getTiposDeBarcos()[$nombre];
-                    $maxColumna = $posicion->getColumna() + $tamanio;
                     $colision = false;
                     if ($posicion->getOrientacion() == 0) {
+                        $maxColumna = $posicion->getColumna() + $tamanio;
                         for ($i = $posicion->getColumna(); $i < $maxColumna; $i++) {
                             foreach ($this->barcos as $b) {
                                 if ($b->verifica($posicion->getFila(), $i)) {
@@ -256,16 +269,9 @@ and open the template in the editor.
                         $correcto = true;
                     }
                 }
+                var_dump($this->$barcos);
+                // print_r($this->barcos);
             }
-
-//            private function comprobarPosicion($posicion){     
-//                $x = $this->tablero[$posicion->getFila()][$posicion->getColumna()];
-//                if($x !== false){
-//                    
-//                }
-//                
-//                return false;
-//            }
 
             private function pintaNumeros() {
                 $resultado = "";
@@ -277,15 +283,14 @@ and open the template in the editor.
 
             private function pintarCasillas($fila) {
                 $resultado = "";
-                $clase = "bcasilla";
+                //$clase = "bcasilla";
                 for ($i = 1; $i < 11; $i++) {
-                    if ($this->tablero[$fila][$i] === "A") {
-                        $clase = "agua";
-                    } elseif ($this->tablero[$fila][$i] === "B") {
+                    $clase = $this->tabla[$fila][$i];
+                    if ($clase != "agua" && $clase != "bcasilla") {
                         $clase = "tocado";
                     }
-                    $resultado .= '<a href="index.php?fila=' . $fila . '&columna=' . $i . '">';
-                    $resultado .= '<div class="' . $clase . '"></div></a>';
+                    $resultado .= '<a href="index.php?fila=' . $fila . '&columna=' . $i . '" class="' . $clase . '"></a>';
+//                    $resultado .= '<div ></div></a>';
                 }
                 return $resultado;
             }
@@ -302,15 +307,16 @@ and open the template in the editor.
             }
 
             public function disparo($fila, $columna) {
-                $this->tablero[$fila][$columna] = $this->compruebaDisparo($fila, $columna);
-                //$copia = new ArrayObject($this->tablero);
-//                $_SESSION["tablero"] = serialize($this->tablero);
-                // var_dump($this->tablero);
+                $this->tabla[$fila][$columna] = $this->compruebaDisparo($fila, $columna);
+                var_dump($this->barcos[0]->getPosicion()->getOrientacion());
+                echo "kk_ ".$this->tabla["I"][9];
             }
 
             private function pintarTablero() {
-                foreach ($this->caracteres as $letra) {
-                    $this->tablero[$letra] = array_fill(1, 10, false);
+                if (empty($this->tabla)) {
+                    foreach ($this->caracteres as $letra) {
+                        $this->tabla[$letra] = array_fill(1, 10, "bcasilla");
+                    }
                 }
                 $html = '<div class="tablero">';
                 $html .= '<div></div>';
@@ -320,17 +326,19 @@ and open the template in the editor.
                     $html .= '<div>' . $fila . '</div>';
                     $html .= $this->pintarCasillas($fila);
                 }
+                $html .= '<div></div>';
                 $html .= '</div>';
                 echo $html;
-                var_dump($this->tablero);
             }
 
             public function inicia() {
-                $this->crearBarco("destructor");
-                $this->crearBarco("submarino");
-                $this->crearBarco("crucero");
-                $this->crearBarco("acorazado");
-                $this->crearBarco("portaaviones");
+                if (empty($this->barcos)) {
+                    $this->crearBarco("destructor");
+                    $this->crearBarco("submarino");
+                    $this->crearBarco("crucero");
+                    $this->crearBarco("acorazado");
+                    $this->crearBarco("portaaviones");
+                }
                 if (isset($_GET["fila"]) && isset($_GET["columna"])) {
                     $this->disparo($_GET["fila"], $_GET["columna"]);
                 }
@@ -341,12 +349,13 @@ and open the template in the editor.
 
         $tablero = null;
         if (isset($_SESSION["Tablero"])) {
-            $tablero = new Tablero();
-        } else {
             $tablero = unserialize($_SESSION["Tablero"]);
+        } else {
+            $tablero = new Tablero();
         }
         $tablero->inicia();
         $_SESSION["Tablero"] = serialize($tablero);
+        // print_r(unserialize($_SESSION["Tablero"]));
         ?>
     </body>
 </html>
