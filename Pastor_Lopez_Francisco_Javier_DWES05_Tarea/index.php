@@ -38,22 +38,20 @@ and open the template in the editor.
                 grid-template-columns: repeat(11, 30px);
             }
 
-
+            .agua{
+                background-color: yellow;
+            }
+            .tocado{
+                background-color: red;
+            }
         </style>
     </head>
     <body>
         <?php
+        session_start();
         error_reporting(E_ALL);
         ini_set('display_errors', '1');
-        $getFila = null;
-        $getColumna = null;
-        if (isset($_GET["fila"])) {
-            $getFila = $_GET["fila"];
-        }
-        if (isset($_GET["columna"])) {
 
-            $getColumna = $_GET["columna"];
-        }
         if (!isset($_SESSION["fin"])) {
             $_SESSION["fin"] = true;
         }
@@ -209,6 +207,10 @@ and open the template in the editor.
             private $tablero = array();
             private $caracteres;
 
+            function __construct() {
+                $this->caracteres = str_split('ABCDEFGHIJ');
+            }
+
             private function crearBarco($nombre) {
                 $correcto = false;
                 $barco = new Barco($nombre);
@@ -301,10 +303,12 @@ and open the template in the editor.
 
             public function disparo($fila, $columna) {
                 $this->tablero[$fila][$columna] = $this->compruebaDisparo($fila, $columna);
-                var_dump($this->tablero);
+                //$copia = new ArrayObject($this->tablero);
+//                $_SESSION["tablero"] = serialize($this->tablero);
+                // var_dump($this->tablero);
             }
 
-            private function inicializarTablero() {
+            private function pintarTablero() {
                 foreach ($this->caracteres as $letra) {
                     $this->tablero[$letra] = array_fill(1, 10, false);
                 }
@@ -318,31 +322,31 @@ and open the template in the editor.
                 }
                 $html .= '</div>';
                 echo $html;
-//                var_dump($this->tablero);
+                var_dump($this->tablero);
             }
 
             public function inicia() {
-                $this->caracteres = str_split('ABCDEFGHIJ');
-                $this->inicializarTablero();
                 $this->crearBarco("destructor");
                 $this->crearBarco("submarino");
                 $this->crearBarco("crucero");
                 $this->crearBarco("acorazado");
                 $this->crearBarco("portaaviones");
-                //print_r($this->barcos);
-                
-        if ($getFila && $getColumna) {
-            $tablero->disparo($getFila, $getColumna);
-        }
+                if (isset($_GET["fila"]) && isset($_GET["columna"])) {
+                    $this->disparo($_GET["fila"], $_GET["columna"]);
+                }
+                $this->pintarTablero();
             }
 
         }
 
-        $tablero;
-        if ($_SESSION["fin"]) {
+        $tablero = null;
+        if (isset($_SESSION["Tablero"])) {
             $tablero = new Tablero();
-            $tablero->inicia();
+        } else {
+            $tablero = unserialize($_SESSION["Tablero"]);
         }
+        $tablero->inicia();
+        $_SESSION["Tablero"] = serialize($tablero);
         ?>
     </body>
 </html>
