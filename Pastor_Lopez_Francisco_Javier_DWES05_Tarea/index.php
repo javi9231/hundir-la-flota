@@ -33,6 +33,17 @@ and open the template in the editor.
                 background-color: aquamarine;
                 border-style: solid;
             }
+            a.boton{
+                border-style: solid;
+                border-width : 1px 1px 1px 1px;
+                -webkit-appearance: button;
+                -moz-appearance: button;
+                appearance: button;
+                text-decoration : none;
+                padding : 4px;
+                border-color : #000000;
+                background-color: red;
+            }
             .tablero{
                 display: grid;
                 grid-template-columns: repeat(11, 30px);
@@ -41,8 +52,20 @@ and open the template in the editor.
             .agua{
                 background-color: yellow;
             }
-            .tocado{
-                background-color: red;
+            .destructor{
+                background-color: darkblue; 
+            } 
+            .submarino{
+                background-color: darkgray;  
+            }
+            .crucero{
+                background-color: darkmagenta;  
+            } 
+            .acorazado{
+                background-color: darkgreen;
+            } 
+            .portaaviones{
+                background-color: darkred;                
             }
 
         </style>
@@ -144,9 +167,9 @@ and open the template in the editor.
             }
 
             private function verificaColumna($columna) {
-                $barco = $this->posicion->getColumna();
+                $barco_columna = $this->posicion->getColumna();
                 $longitud = count($this->impactos);
-                return ($columna === $barco || $columna > $barco && $columna < ($barco + $longitud));
+                return ($columna == $barco_columna || $columna > $barco_columna && $columna < ($barco_columna + $longitud));
             }
 
             private function verificaFila($fila) {
@@ -154,7 +177,7 @@ and open the template in the editor.
                 $longitud = count($this->impactos);
                 $inicio = array_search($barco, $this->caracteres);
                 $valorFila = array_search($fila, $this->caracteres);
-                return ($inicio === $valorFila || $valorFila > $inicio && $valorFila < ($inicio + $longitud));
+                return ($inicio == $valorFila || $valorFila > $inicio && $valorFila < ($inicio + $longitud));
             }
 
             public function verifica($fila, $columna) {
@@ -176,7 +199,7 @@ and open the template in the editor.
             public function disparo($fila, $columna) {
                 if ($this->verifica($fila, $columna)) {
                     $noImpacto = array_search(false, $this->impactos);
-                    if ($noImpacto) {
+                    if ($noImpacto >= 0) {
                         $this->impactos[$noImpacto] = true;
                         return true;
                     }
@@ -283,23 +306,23 @@ and open the template in the editor.
 
             private function pintarCasillas($fila) {
                 $resultado = "";
-                //$clase = "bcasilla";
+                $clase = "bcasilla";
                 for ($i = 1; $i < 11; $i++) {
                     $clase = $this->tabla[$fila][$i];
                     if ($clase != "agua" && $clase != "bcasilla") {
-                        $clase = "tocado";
+
+                        $resultado .= '<a href="" class="' . $clase . '"></a>';
+                    } else {
+                        $resultado .= '<a href="index.php?fila=' . $fila . '&columna=' . $i . '" class="' . $clase . '"></a>';
                     }
-                    $resultado .= '<a href="index.php?fila=' . $fila . '&columna=' . $i . '" class="' . $clase . '"></a>';
-//                    $resultado .= '<div ></div></a>';
                 }
                 return $resultado;
             }
 
             private function compruebaDisparo($fila, $columna) {
                 foreach ($this->barcos as $barco) {
-                    $respuesta = $barco->verifica($fila, $columna);
-                    if ($respuesta) {
-                        $barco->disparo($fila, $columna);
+                    // $respuesta = $barco->verifica($fila, $columna);
+                    if ($barco->disparo($fila, $columna)) {
                         return $barco->getNombre();
                     }
                 }
@@ -309,7 +332,8 @@ and open the template in the editor.
             public function disparo($fila, $columna) {
                 $this->tabla[$fila][$columna] = $this->compruebaDisparo($fila, $columna);
                 var_dump($this->barcos[0]->getPosicion()->getOrientacion());
-                echo "kk_ ".$this->tabla["I"][9];
+                echo "kk_ " . $this->tabla[$fila][$columna];
+                return $this->tabla[$fila][$columna];
             }
 
             private function pintarTablero() {
@@ -331,6 +355,11 @@ and open the template in the editor.
                 echo $html;
             }
 
+            private function pintarBoton() {
+                $html = '<a href="index.php?reset=1" value="Reiniciar" class="boton">Reiniciar</a>';
+                echo $html;
+            }
+
             public function inicia() {
                 if (empty($this->barcos)) {
                     $this->crearBarco("destructor");
@@ -343,18 +372,24 @@ and open the template in the editor.
                     $this->disparo($_GET["fila"], $_GET["columna"]);
                 }
                 $this->pintarTablero();
+                $this->pintarBoton();
+                var_dump($this->barcos[0]->getPosicion()->getColumna());
             }
 
         }
 
         $tablero = null;
-        if (isset($_SESSION["Tablero"])) {
+        if ($_SESSION["Tablero"] != null && isset($_SESSION["Tablero"])) {
             $tablero = unserialize($_SESSION["Tablero"]);
-        } else {
-            $tablero = new Tablero();
         }
+        if ($tablero == null) {
+            $tablero = new Tablero();
+            $_SESSION["Tablero"] = serialize($tablero);
+        }
+
         $tablero->inicia();
         $_SESSION["Tablero"] = serialize($tablero);
+        // $_SESSION["Tablero"] = null;
         // print_r(unserialize($_SESSION["Tablero"]));
         ?>
     </body>
