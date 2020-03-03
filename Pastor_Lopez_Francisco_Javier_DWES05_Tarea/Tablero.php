@@ -78,11 +78,14 @@ class Tablero {
 
     private function pintarCasillas($fila) {
         $resultado = "";
-        $clase = "bcasilla";
+        
         for ($i = 1; $i < 11; $i++) {
-            $clase = $this->tabla[$fila][$i];
+            if(!isset($this->tabla[$fila][$i])){
+                $clase = "bcasilla";
+            }else {
+                $clase = $this->tabla[$fila][$i];
+            }
             if ($clase != "agua" && $clase != "bcasilla") {
-
                 $resultado .= '<a href="" class="' . $clase . '"></a>';
             } else {
                 $resultado .= '<a href="index.php?fila=' . $fila . '&columna=' . $i . '" class="' . $clase . '"></a>';
