@@ -1,3 +1,4 @@
+<?php session_start() ?>
 <!DOCTYPE html>
 <!--
 To change this license header, choose License Headers in Project Properties.
@@ -73,7 +74,6 @@ and open the template in the editor.
     </head>
     <body>
         <?php
-        session_start();
         error_reporting(E_ALL);
         ini_set('display_errors', '1');
         require_once './Posicion.php';
